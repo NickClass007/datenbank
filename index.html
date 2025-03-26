@@ -36,9 +36,10 @@
           for (const key in data) {
             const word = data[key].word;
             const definition = data[key].definition;
+            const genitiv = data[key].genitiv;
 
             const entry = document.createElement("div");
-            entry.textContent = `Wort: ${word}, Definition: ${definition}`;
+            entry.textContent = `Wort: ${word}, Definition: ${definition}, Genitiv: ${genitiv}`;
             display.appendChild(entry);
           }
         } else {
@@ -51,6 +52,7 @@
     function addWordWithAutoIncrement() {
       const wordInput = document.getElementById("word-input").value;
       const definitionInput = document.getElementById("definition-input").value;
+      const definitionInput = document.getElementById("genitiv-input").value;
 
       if (wordInput && definitionInput) {
         const dictionaryRef = ref(database, "dictionary");
@@ -69,12 +71,14 @@
           const newKey = `word${index}`; // Generiere neuen Schlüssel
           set(ref(database, `dictionary/${newKey}`), {
             word: wordInput,
-            definition: definitionInput
+            definition: definitionInput,
+            genitiv: genitivInput
           });
 
           alert(`Wort hinzugefügt unter Schlüssel: ${newKey}!`);
           document.getElementById("word-input").value = "";
           document.getElementById("definition-input").value = "";
+          document.getElementById("genitiv-input").value = "";
         }, { onlyOnce: true }); // Einmalige Datenabfrage
       } else {
         alert("Bitte beide Felder ausfüllen!");
@@ -92,6 +96,7 @@
     <h2>Neues Wort hinzufügen</h2>
     <input id="word-input" type="text" placeholder="Wort" />
     <input id="definition-input" type="text" placeholder="Definition" />
+    <input id="genitiv-input" type="text" placeholder="Genitiv" />
     <button onclick="addWordWithAutoIncrement()">Hinzufügen</button>
   </div>
   <div>
