@@ -37,9 +37,10 @@
             const word = data[key].word;
             const definition = data[key].definition;
             const genitiv = data[key].genitiv;
+            const ort = data[key].ort; // Ort hinzufügen
 
             const entry = document.createElement("div");
-            entry.textContent = `Wort: ${word}, Definition: ${definition}, Genitiv: ${genitiv}`;
+            entry.textContent = `Wort: ${word}, Definition: ${definition}, Genitiv: ${genitiv}, Ort: ${ort}`; // Ort anzeigen
             display.appendChild(entry);
           }
         } else {
@@ -52,9 +53,10 @@
     function addWordWithAutoIncrement() {
       const wordInput = document.getElementById("word-input").value;
       const definitionInput = document.getElementById("definition-input").value;
-      const genitivInput = document.getElementById("genitiv-input").value; // Korrekt benannte Variable
+      const genitivInput = document.getElementById("genitiv-input").value;
+      const ortInput = document.getElementById("ort-input").value; // Ort-Feld
 
-      if (wordInput && definitionInput && genitivInput) {  // Überprüfen, dass alle Felder ausgefüllt sind
+      if (wordInput && definitionInput && genitivInput && ortInput) {  // Alle Felder müssen ausgefüllt sein
         const dictionaryRef = ref(database, "dictionary");
 
         // Abrufen und Hochzählen
@@ -72,13 +74,15 @@
           set(ref(database, `dictionary/${newKey}`), {
             word: wordInput,
             definition: definitionInput,
-            genitiv: genitivInput // Genitiv korrekt setzen
+            genitiv: genitivInput,
+            ort: ortInput // Ort hinzufügen
           });
 
           alert(`Wort hinzugefügt unter Schlüssel: ${newKey}!`);
           document.getElementById("word-input").value = "";
           document.getElementById("definition-input").value = "";
           document.getElementById("genitiv-input").value = "";
+          document.getElementById("ort-input").value = ""; // Ort-Eingabefeld zurücksetzen
         }, { onlyOnce: true }); // Einmalige Datenabfrage
       } else {
         alert("Bitte alle Felder ausfüllen!");
@@ -97,6 +101,7 @@
     <input id="word-input" type="text" placeholder="Wort" />
     <input id="definition-input" type="text" placeholder="Definition" />
     <input id="genitiv-input" type="text" placeholder="Genitiv" />
+    <input id="ort-input" type="text" placeholder="Ort" /> <!-- Eingabefeld für Ort -->
     <button onclick="addWordWithAutoIncrement()">Hinzufügen</button>
   </div>
   <div>
