@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Firebase Datenanzeige</title>
+  <script type="module">
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-database.js";
+
+    // Firebase initialisieren
+    const database = getDatabase();
+
+    // Funktion zum Hochladen der JSON-Daten
+    async function uploadJSONToFirebase() {
+      const response = await fetch('dictionary.json'); // Datei muss im Projektverzeichnis sein
+      const jsonData = await response.json();
+
+      set(ref(database, "/"), jsonData)
+        .then(() => {
+          console.log("Daten erfolgreich hochgeladen!");
+        })
+        .catch((error) => {
+          console.error("Fehler beim Hochladen der JSON-Daten:", error);
+        });
+    }
+
+    // Upload ausführen
+    uploadJSONToFirebase();
+
+    // Funktion: Wörter aus der Realtime Database abrufen
+    function fetchWordsFromDatabase() {
+      const wordList = document.getElementById("word-list"); // Element, wo die Wörter angezeigt werden
+      const dictionaryRef = ref(database, "dictionary");
+
+      // Daten abrufen und anzeigen
+      onValue(dictionaryRef, (snapshot) => {
+        wordList.innerHTML = ""; // Liste vorher leeren
+        snapshot.forEach((childSnapshot) => {
+          const wordData = childSnapshot.val();
+          const wordItem = document.createElement("div");
+          wordItem.textContent = `${wordData.word}: ${wordData.definition}`;
+          wordList.appendChild(wordItem);
+        });
+      });
+    }
+
+    // Funktion auf Button klicken
+    window.fetchWordsFromDatabase = fetchWordsFromDatabase;
+  </script>
+</head>
+<body>
+  <h1>Wörterbuch aus der Firebase-Datenbank</h1>
+  <button onclick="fetchWordsFromDatabase()">Wörter Abrufen</button>
+  <div id="word-list">
+    <!-- Wörter werden hier angezeigt -->
+  </div>
+</body>
+</html>
