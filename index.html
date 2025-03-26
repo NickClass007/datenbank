@@ -41,8 +41,12 @@
             const genitiv = data[key].genitiv;
             const ort = data[key].ort;
 
-            // Wenn der Suchbegriff mit dem Wort übereinstimmt (Groß- und Kleinschreibung ignoriert)
-            if (word.toLowerCase().includes(searchTerm.toLowerCase())) {
+            // Suchlogik: Wenn der Suchbegriff in einem der Felder gefunden wird
+            if (word.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                definition.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                genitiv.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                ort.toLowerCase().includes(searchTerm.toLowerCase())) {
+              
               const entry = document.createElement("div");
               entry.textContent = `Wort: ${word}, Definition: ${definition}, Genitiv: ${genitiv}, Ort: ${ort}`;
               display.appendChild(entry);
@@ -107,10 +111,10 @@
 <body>
   <h1>Wörter hinzufügen und anzeigen</h1>
 
-  <!-- Suchfeld hinzufügen -->
+  <!-- Ein Suchfeld für alle Spalten -->
   <div>
-    <h2>Nach einem Wort suchen</h2>
-    <input id="search-input" type="text" placeholder="Suche nach Wort..." oninput="fetchData(this.value)" />
+    <h2>Nach einem Wort, Definition, Genitiv oder Ort suchen</h2>
+    <input id="search-input" type="text" placeholder="Suche..." oninput="fetchData(this.value)" />
   </div>
 
   <div>
