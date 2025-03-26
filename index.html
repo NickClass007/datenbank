@@ -52,9 +52,9 @@
     function addWordWithAutoIncrement() {
       const wordInput = document.getElementById("word-input").value;
       const definitionInput = document.getElementById("definition-input").value;
-      const definitionInput = document.getElementById("genitiv-input").value;
+      const genitivInput = document.getElementById("genitiv-input").value; // Korrekt benannte Variable
 
-      if (wordInput && definitionInput) {
+      if (wordInput && definitionInput && genitivInput) {  // Überprüfen, dass alle Felder ausgefüllt sind
         const dictionaryRef = ref(database, "dictionary");
 
         // Abrufen und Hochzählen
@@ -72,7 +72,7 @@
           set(ref(database, `dictionary/${newKey}`), {
             word: wordInput,
             definition: definitionInput,
-            genitiv: genitivInput
+            genitiv: genitivInput // Genitiv korrekt setzen
           });
 
           alert(`Wort hinzugefügt unter Schlüssel: ${newKey}!`);
@@ -81,7 +81,7 @@
           document.getElementById("genitiv-input").value = "";
         }, { onlyOnce: true }); // Einmalige Datenabfrage
       } else {
-        alert("Bitte beide Felder ausfüllen!");
+        alert("Bitte alle Felder ausfüllen!");
       }
     }
 
