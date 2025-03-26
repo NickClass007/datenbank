@@ -3,56 +3,53 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Firebase Datenanzeige</title>
+  <title>Einzelne Definition anzeigen</title>
   <script type="module">
-    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-database.js";
+
+    // Firebase-Konfiguration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCXihHnRqn5fcLShJ2ByKhNnfs2z8bjlvg",
+      authDomain: "navis-salutaris-7b577.firebaseapp.com",
+      databaseURL: "https://navis-salutaris-7b577-default-rtdb.firebaseio.com",
+      projectId: "navis-salutaris-7b577",
+      storageBucket: "navis-salutaris-7b577.firebasestorage.app",
+      messagingSenderId: "321996551929",
+      appId: "1:321996551929:web:a630f1249ebc93f6f75428"
+    };
 
     // Firebase initialisieren
-    const database = getDatabase();
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
 
-    // Funktion zum Hochladen der JSON-Daten
-    async function uploadJSONToFirebase() {
-      const response = await fetch('dictionary.json'); // Datei muss im Projektverzeichnis sein
-      const jsonData = await response.json();
-
-      set(ref(database, "/"), jsonData)
-        .then(() => {
-          console.log("Daten erfolgreich hochgeladen!");
-        })
-        .catch((error) => {
-          console.error("Fehler beim Hochladen der JSON-Daten:", error);
-        });
-    }
-
-    // Upload ausführen
-    uploadJSONToFirebase();
-
-    // Funktion: Wörter aus der Realtime Database abrufen
-    function fetchWordsFromDatabase() {
-      const wordList = document.getElementById("word-list"); // Element, wo die Wörter angezeigt werden
-      const dictionaryRef = ref(database, "dictionary");
+    // Funktion zum Abrufen der Definition
+    function fetchDefinition() {
+      const display = document.getElementById("definition-display");
+      const wordRef = ref(database, "dictionary/word1"); // Pfad zum spezifischen Datensatz
 
       // Daten abrufen und anzeigen
-      onValue(dictionaryRef, (snapshot) => {
-        wordList.innerHTML = ""; // Liste vorher leeren
-        snapshot.forEach((childSnapshot) => {
-          const wordData = childSnapshot.val();
-          const wordItem = document.createElement("div");
-          wordItem.textContent = `${wordData.word}: ${wordData.definition}`;
-          wordList.appendChild(wordItem);
-        });
+      onValue(wordRef, (snapshot) => {
+        const wordData = snapshot.val();
+        if (wordData) {
+          display.textContent = `Wort: ${wordData.word}, Definition: ${wordData.definition}`;
+        } else {
+          display.textContent = "Kein Eintrag gefunden!";
+        }
+      }, {
+        onlyOnce: true
       });
     }
 
-    // Funktion auf Button klicken
-    window.fetchWordsFromDatabase = fetchWordsFromDatabase;
+    // Funktion für globalen Zugriff verfügbar machen
+    window.fetchDefinition = fetchDefinition;
   </script>
 </head>
 <body>
-  <h1>Wörterbuch aus der Firebase-Datenbank</h1>
-  <button onclick="fetchWordsFromDatabase()">Wörter Abrufen</button>
-  <div id="word-list">
-    <!-- Wörter werden hier angezeigt -->
+  <h1>Definition aus der Firebase-Datenbank</h1>
+  <button onclick="fetchDefinition()">Abrufen</button>
+  <div id="definition-display">
+    <!-- Die Definition wird hier angezeigt -->
   </div>
 </body>
 </html>
