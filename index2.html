@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daten hinzufügen und anzeigen</title>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
+    import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-database.js";
+
+    // Firebase-Konfiguration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCXihHnRqn5fcLShJ2ByKhNnfs2z8bjlvg",
+      authDomain: "navis-salutaris-7b577.firebaseapp.com",
+      databaseURL: "https://navis-salutaris-7b577-default-rtdb.firebaseio.com",
+      projectId: "navis-salutaris-7b577",
+      storageBucket: "navis-salutaris-7b577.firebasestorage.app",
+      messagingSenderId: "321996551929",
+      appId: "1:321996551929:web:a630f1249ebc93f6f75428"
+    };
+
+    // Firebase initialisieren
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    // Funktion zum Abrufen aller Daten aus der Datenbank
+    function fetchAllData() {
+      const display = document.getElementById("data-display");
+      const dictionaryRef = ref(database, "dictionary");
+
+      onValue(dictionaryRef, (snapshot) => {
+        const data = snapshot.val();
+        display.innerHTML = ""; // Inhalt leeren
+
+        if (data) {
+          for (const key in data) {
+            const word = data[key].word;
+            const definition = data[key].definition;
+
+            const entry = document.createElement("div");
+            entry.textContent = `Wort: ${word}, Definition: ${definition}`;
+            display.appendChild(entry);
+          }
+        } else {
+          display.textContent = "Keine Daten gefunden!";
+        }
+      });
+    }
+
+    // Funktion zum Hinzufügen neuer Daten
+    function addData() {
+      const wordInput = document.getElementById("word-input").value;
+      const definitionInput = document.getElementById("definition-input").value;
+
+      if (wordInput && definitionInput) {
+        const dictionaryRef = ref(database, "dictionary");
+        push(dictionaryRef, {
+          word: wordInput,
+          definition: definitionInput
+        });
+        document.getElementById("word-input").value = ""; // Felder zurücksetzen
+        document.getElementById("definition-input").value = "";
+        alert("Wort und Definition hinzugefügt!");
+      } else {
+        alert("Bitte beide Felder ausfüllen!");
+      }
+    }
+
+    // Funktionen global verfügbar machen
+    window.fetchAllData = fetchAllData;
+    window.addData = addData;
+  </script>
+</head>
+<body>
+  <h1>Wörter hinzufügen und anzeigen</h1>
+  <div>
+    <h2>Neues Wort hinzufügen</h2>
+    <input id="word-input" type="text" placeholder="Wort" />
+    <input id="definition-input" type="text" placeholder="Definition" />
+    <button onclick="addData()">Hinzufügen</button>
+  </div>
+  <div>
+    <h2>Alle Wörter anzeigen</h2>
+    <button onclick="fetchAllData()">Daten abrufen</button>
+    <div id="data-display">
+      <!-- Alle Daten werden hier angezeigt -->
+    </div>
+  </div>
+</body>
+</html>
