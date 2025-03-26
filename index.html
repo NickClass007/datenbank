@@ -26,7 +26,11 @@
     // Funktion zum Abrufen und Filtern der Daten
     function fetchData(searchTerm = '') {
       const display = document.getElementById("data-display");
+      const searchDisplay = document.getElementById("search-display"); // Display für den Suchbegriff
       const dictionaryRef = ref(database, "dictionary");
+
+      // Zeigt den aktuellen Suchbegriff an
+      searchDisplay.textContent = `Suchbegriff: ${searchTerm}`;
 
       onValue(dictionaryRef, (snapshot) => {
         const data = snapshot.val();
@@ -117,6 +121,9 @@
     <h2>Nach einem Wort, Definition, Genitiv oder Ort suchen</h2>
     <input id="search-input" type="text" placeholder="Suche..." oninput="fetchData(this.value)" />
   </div>
+
+  <!-- Bereich zur Anzeige des Suchbegriffs -->
+  <div id="search-display" style="font-weight: bold; margin-top: 10px;"></div> <!-- Suchbegriff unter der Suchleiste -->
 
   <div>
     <h2>Neues Wort hinzufügen</h2>
