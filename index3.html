@@ -1,0 +1,167 @@
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
+  import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-database.js";
+
+  // Firebase-Konfiguration
+  const firebaseConfig = {
+    apiKey: "AIzaSyCXihHnRqn5fcLShJ2ByKhNnfs2z8bjlvg",
+    authDomain: "navis-salutaris-7b577.firebaseapp.com",
+    databaseURL: "https://navis-salutaris-7b577-default-rtdb.firebaseio.com",
+    projectId: "navis-salutaris-7b577",
+    storageBucket: "navis-salutaris.firebasestorage.app",
+    messagingSenderId: "321996551929",
+    appId: "1:321996551929:web:a630f1249ebc93f6f75428"
+  };
+
+  // Firebase initialisieren
+  const app = initializeApp(firebaseConfig);
+  const database = getDatabase(app);
+
+  // Funktion zum Abrufen aller Daten
+  function fetchAllData() {
+    const display = document.getElementById("data-display");
+    const dictionaryRef = ref(database, "dictionary");
+
+    onValue(dictionaryRef, (snapshot) => {
+      const data = snapshot.val();
+      display.innerHTML = ""; // Inhalt leeren
+
+      if (data) {
+        for (const key in data) {
+          const word = data[key].word;
+          const definition = data[key].definition;
+          const genitiv = data[key].genitiv;
+          const ort = data[key].ort; // Ort hinzufügen
+
+          const entry = document.createElement("div");
+          entry.textContent = `Wort: ${word}, Definition: ${definition}, Genitiv: ${genitiv}, Ort: ${ort}`; // Ort anzeigen
+          display.appendChild(entry);
+        }
+      } else {
+        display.textContent = "Keine Daten gefunden!";
+      }
+    });
+  }
+
+  // Funktion zum Hinzufügen neuer Daten mit fortlaufender Zahl im Dateinamen
+  function addWordWithAutoIncrement() {
+    const wordInput = document.getElementById("word-input").value;
+    const definitionInput = document.getElementById("definition-input").value;
+    const genitivInput = document.getElementById("genitiv-input").value;
+    const ortInput = document.getElementById("ort-input").value; // Ort-Feld
+
+    if (wordInput && definitionInput && genitivInput && ortInput) {  // Alle Felder müssen ausgefüllt sein
+      const dictionaryRef = ref(database, "dictionary");
+
+      // Abrufen und Zählen der bestehenden Einträge für den Ort
+      onValue(dictionaryRef, (snapshot) => {
+        const data = snapshot.val();
+        let count = 1;
+
+        // Zähle die Wörter mit dem gleichen Ort und berechne den Index
+        for (const key in data) {
+          if (data[key].ort === ortInput) {
+            count++; // Erhöhe den Zähler für den gleichen Ort
+          }
+        }
+
+        const newKey = `${ortInput}.${count}`; // Beispiel: LW_WH_1_Hygien.1
+
+        // Speichern der neuen Daten in Firebase
+        set(ref(database, `dictionary/${newKey}`), {
+          word: wordInput,
+          definition: definitionInput,
+          genitiv: genitivInput,
+          ort: ortInput // Ort hinzufügen
+        });
+
+        alert(`Wort hinzugefügt unter Schlüssel: ${newKey}!`);
+        document.getElementById("word-input").value = "";
+        document.getElementById("definition-input").value = "";
+        document.getElementById("genitiv-input").value = "";
+        document.getElementById("ort-input").value = ""; // Ort-Eingabefeld zurücksetzen
+      }, { onlyOnce: true }); // Einmalige Datenabfrage
+    } else {
+      alert("Bitte alle Felder ausfüllen!");
+    }
+  }
+
+  // Funktion zum Hochladen und Verarbeiten der CSV-Datei
+  function uploadCSV() {
+    const fileInput = document.getElementById("csv-file");
+    const file = fileInput.files[0];
+
+    if (!file) {
+      alert("Bitte eine CSV-Datei auswählen.");
+      return;
+    }
+
+    const reader = new FileReader();
+
+    // Event, das nach dem erfolgreichen Einlesen der Datei ausgelöst wird
+    reader.onload = function(event) {
+      const csvData = event.target.result;
+      const parsedData = parseCSV(csvData);
+      saveCSVDataToFirebase(parsedData);
+    };
+
+    // Datei lesen
+    reader.readAsText(file);
+  }
+
+  // CSV-Daten parsen (Annahme: CSV-Trennung durch Komma, jede Zeile ist ein Datensatz)
+  function parseCSV(csvData) {
+    const rows = csvData.split("\n");
+    const parsedData = [];
+
+    rows.forEach(row => {
+      const columns = row.split(",");
+      if (columns.length === 4) { // Sicherstellen, dass jede Zeile 4 Spalten hat
+        parsedData.push({
+          word: columns[0].trim(),
+          genitiv: columns[1].trim(),
+          definition: columns[2].trim(),
+          ort: columns[3].trim()
+        });
+      }
+    });
+
+    return parsedData;
+  }
+
+  // CSV-Daten in Firebase speichern
+  function saveCSVDataToFirebase(data) {
+    const dictionaryRef = ref(database, "dictionary");
+
+    data.forEach(item => {
+      // Zähle die Wörter mit dem gleichen Ort und berechne den Index
+      let count = 1;
+      onValue(dictionaryRef, (snapshot) => {
+        const dbData = snapshot.val();
+        for (const key in dbData) {
+          if (dbData[key].ort === item.ort) {
+            count++; // Zähler erhöhen
+          }
+        }
+
+        const newKey = `${item.ort}.${count}`; // Beispiel: LW_WH_1_Hygien.1
+
+        // Speichern der neuen Daten in Firebase
+        set(ref(database, `dictionary/${newKey}`), {
+          word: item.word,
+          definition: item.definition,
+          genitiv: item.genitiv,
+          ort: item.ort
+        });
+      });
+
+    });
+
+    alert("CSV-Daten wurden erfolgreich hinzugefügt!");
+  }
+
+  // Funktionen global verfügbar machen
+  window.fetchAllData = fetchAllData;
+  window.addWordWithAutoIncrement = addWordWithAutoIncrement;
+  window.uploadCSV = uploadCSV;
+</script>
