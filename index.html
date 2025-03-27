@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wörter hinzufügen und anzeigen</title>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-database.js";
+
+    // Firebase-Konfiguration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCXihHnRqn5fcLShJ2ByKhNnfs2z8bjlvg",
+      authDomain: "navis-salutaris-7b577.firebaseapp.com",
+      databaseURL: "https://navis-salutaris-7b577-default-rtdb.firebaseio.com",
+      projectId: "navis-salutaris-7b577",
+      storageBucket: "navis-salutaris.firebasestorage.app",
+      messagingSenderId: "321996551929",
+      appId: "1:321996551929:web:a630f1249ebc93f6f75428"
+    };
+
+    // Firebase initialisieren
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    // Funktion zum Abrufen aller Daten
+    function fetchAllData() {
+      const display = document.getElementById("data-display");
+      const dictionaryRef = ref(database, "dictionary");
+
+      onValue(dictionaryRef, (snapshot) => {
+        const data = snapshot.val();
+        display.innerHTML = ""; // Inhalt leeren
+
+        if (data) {
+          for (const key in data) {
+            const word = data[key].word;
+            const definition = data[key].definition;
+            const genitiv = data[key].genitiv;
+            const ort = data[key].ort; // Ort hinzufügen
+
+            const entry = document.createElement("div");
+            entry.textContent = `Wort: ${word}, Definition: ${definition}, Genitiv: ${genitiv}, Ort: ${ort}`; // Ort anzeigen
+            display.appendChild(entry);
+          }
+        } else {
+          display.textContent = "Keine Daten gefunden!";
+        }
+      });
+    }
+
+    // Funktion zum Hinzufügen neuer Daten mit automatischer Hochzählung
+    function addWordWithAutoIncrement() {
+      const wordInput = document.getElementById("word-input").value;
+      const definitionInput = document.getElementById("definition-input").value;
+      const genitivInput = document.getElementById("genitiv-input").value;
+      const ortInput = document.getElementById("ort-input").value; // Ort-Feld
+
+      if (wordInput && definitionInput && genitivInput && ortInput) {  // Alle Felder müssen ausgefüllt sein
+        const dictionaryRef = ref(database, "dictionary");
+
+        // Abrufen und Hochzählen
+        onValue(dictionaryRef, (snapshot) => {
+          const data = snapshot.val();
+          let index = 1;
+
+          if (data) {
+            while (data[`word${index}`]) {
+              index++; // Suche nächsten freien Schlüssel
+            }
+          }
+
+          const newKey = `word${index}`; // Generiere neuen Schlüssel
+          set(ref(database, `dictionary/${newKey}`), {
+            word: wordInput,
+            definition: definitionInput,
+            genitiv: genitivInput,
+            ort: ortInput // Ort hinzufügen
+          });
+
+          alert(`Wort hinzugefügt unter Schlüssel: ${newKey}!`);
+          document.getElementById("word-input").value = "";
+          document.getElementById("definition-input").value = "";
+          document.getElementById("genitiv-input").value = "";
+          document.getElementById("ort-input").value = ""; // Ort-Eingabefeld zurücksetzen
+        }, { onlyOnce: true }); // Einmalige Datenabfrage
+      } else {
+        alert("Bitte alle Felder ausfüllen!");
+      }
+    }
+
+    // Funktion zum Hochladen und Verarbeiten der CSV-Datei
+    function uploadCSV() {
+      const fileInput = document.getElementById("csv-file");
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert("Bitte eine CSV-Datei auswählen.");
+        return;
+      }
+
+      const reader = new FileReader();
+
+      // Event, das nach dem erfolgreichen Einlesen der Datei ausgelöst wird
+      reader.onload = function(event) {
+        const csvData = event.target.result;
+        const parsedData = parseCSV(csvData);
+        saveCSVDataToFirebase(parsedData);
+      };
+
+      // Datei lesen
+      reader.readAsText(file);
+    }
+
+    // CSV-Daten parsen (Annahme: CSV-Trennung durch Komma, jede Zeile ist ein Datensatz)
+    function parseCSV(csvData) {
+      const rows = csvData.split("\n");
+      const parsedData = [];
+
+      rows.forEach(row => {
+        const columns = row.split(",");
+        if (columns.length === 4) { // Sicherstellen, dass jede Zeile 4 Spalten hat
+          parsedData.push({
+            word: columns[0].trim(),
+            genitiv: columns[1].trim(),
+            definition: columns[2].trim(),
+            ort: columns[3].trim()
+          });
+        }
+      });
+
+      return parsedData;
+    }
+
+    // CSV-Daten in Firebase speichern
+    function saveCSVDataToFirebase(data) {
+      const dictionaryRef = ref(database, "dictionary");
+
+      data.forEach(item => {
+        // Automatisches Hinzufügen der Wörter in die Firebase-Datenbank
+        const newKey = `word${Date.now()}`; // Generiere einen einzigartigen Schlüssel basierend auf der Zeit
+        set(ref(database, `dictionary/${newKey}`), {
+          word: item.word,
+          definition: item.definition,
+          genitiv: item.genitiv,
+          ort: item.ort
+        });
+      });
+
+      alert("CSV-Daten wurden erfolgreich hinzugefügt!");
+    }
+
+    // Funktionen global verfügbar machen
+    window.fetchAllData = fetchAllData;
+    window.addWordWithAutoIncrement = addWordWithAutoIncrement;
+    window.uploadCSV = uploadCSV;
+  </script>
+</head>
+<body>
+  <h1>Wörter hinzufügen und anzeigen</h1>
+  <div>
+    <h2>Neues Wort hinzufügen</h2>
+    <input id="word-input" type="text" placeholder="Wort" />
+    <input id="definition-input" type="text" placeholder="Definition" />
+    <input id="genitiv-input" type="text" placeholder="Genitiv" />
+    <input id="ort-input" type="text" placeholder="Ort" /> <!-- Eingabefeld für Ort -->
+    <button onclick="addWordWithAutoIncrement()">Hinzufügen</button>
+  </div>
+  <div>
+    <h2>CSV-Datei hochladen</h2>
+    <input type="file" id="csv-file" accept=".csv" />
+    <button onclick="uploadCSV()">CSV hochladen</button>
+  </div>
+  <div>
+    <h2>Alle Wörter anzeigen</h2>
+    <button onclick="fetchAllData()">Daten abrufen</button>
+    <div id="data-display">
+      <!-- Alle Daten werden hier angezeigt -->
+    </div>
+  </div>
+</body>
+</html>
