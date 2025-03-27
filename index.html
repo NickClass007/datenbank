@@ -65,12 +65,12 @@
           let index = 1;
 
           if (data) {
-            while (data[`${ort}.${index}`]) {
+            while (data[`word${index}`]) {
               index++; // Suche nächsten freien Schlüssel
             }
           }
 
-          const newKey = `${ort}.${index}`; // Generiere neuen Schlüssel
+          const newKey = `word${index}`; // Generiere neuen Schlüssel
           set(ref(database, `dictionary/${newKey}`), {
             word: wordInput,
             definition: definitionInput,
@@ -101,17 +101,10 @@
 
       const reader = new FileReader();
 
-      // Fehlerbehandlung beim Lesen der Datei
-      reader.onerror = function(error) {
-        alert("Fehler beim Lesen der Datei: " + error);
-      };
-
       // Event, das nach dem erfolgreichen Einlesen der Datei ausgelöst wird
       reader.onload = function(event) {
         const csvData = event.target.result;
-        console.log("CSV-Datei eingelesen:", csvData);  // Prüfen, ob die Datei korrekt eingelesen wird
         const parsedData = parseCSV(csvData);
-        console.log("CSV-Daten geparst:", parsedData);  // Prüfen, ob die Daten korrekt geparst werden
         saveCSVDataToFirebase(parsedData);
       };
 
@@ -133,8 +126,6 @@
             definition: columns[2].trim(),
             ort: columns[3].trim()
           });
-        } else {
-          console.log("Ungültige Zeile, übersprungen:", row);  // Debug: Zeilen, die nicht 4 Spalten haben
         }
       });
 
@@ -147,7 +138,7 @@
 
       data.forEach(item => {
         // Automatisches Hinzufügen der Wörter in die Firebase-Datenbank
-        const newKey = `${item.ort}.${Date.now()}`; // Generiere einen einzigartigen Schlüssel basierend auf der Zeit
+        const newKey = `word${Date.now()}`; // Generiere einen einzigartigen Schlüssel basierend auf der Zeit
         set(ref(database, `dictionary/${newKey}`), {
           word: item.word,
           definition: item.definition,
@@ -188,4 +179,5 @@
     </div>
   </div>
 </body>
+  
 </html>
