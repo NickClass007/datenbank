@@ -65,12 +65,12 @@
           let index = 1;
 
           if (data) {
-            while (data[`${ort}.${index}`]) {
+            while (data[`${item.ort}.${index}`]) {
               index++; // Suche nächsten freien Schlüssel
             }
           }
 
-          const newKey = `${ort}.${index}`; // Generiere neuen Schlüssel
+          const newKey = `${item.ort}.${index}`; // Generiere neuen Schlüssel
           set(ref(database, `dictionary/${newKey}`), {
             word: wordInput,
             definition: definitionInput,
@@ -138,7 +138,7 @@
 
       data.forEach(item => {
         // Automatisches Hinzufügen der Wörter in die Firebase-Datenbank
-        const newKey = `${ort}.${Date.now()}`; // Generiere einen einzigartigen Schlüssel basierend auf der Zeit
+        const newKey = `${item.ort}.${Date.now()}`; // Generiere einen einzigartigen Schlüssel basierend auf der Zeit
         set(ref(database, `dictionary/${newKey}`), {
           word: item.word,
           definition: item.definition,
