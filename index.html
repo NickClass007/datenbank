@@ -133,6 +133,8 @@
             definition: columns[2].trim(),
             ort: columns[3].trim()
           });
+        } else {
+          console.log("Ungültige Zeile, übersprungen:", row);  // Debug: Zeilen, die nicht 4 Spalten haben
         }
       });
 
