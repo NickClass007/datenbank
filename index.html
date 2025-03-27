@@ -49,7 +49,7 @@
       });
     }
 
-    // Funktion zum Hinzufügen neuer Daten mit automatischer Hochzählung
+    // Funktion zum Hinzufügen neuer Daten mit fortlaufender Zahl im Dateinamen
     function addWordWithAutoIncrement() {
       const wordInput = document.getElementById("word-input").value;
       const definitionInput = document.getElementById("definition-input").value;
@@ -59,12 +59,12 @@
       if (wordInput && definitionInput && genitivInput && ortInput) {  // Alle Felder müssen ausgefüllt sein
         const dictionaryRef = ref(database, "dictionary");
 
-        // Abrufen und Zählen der Wörter mit dem gleichen Ort
+        // Abrufen und Zählen der bestehenden Einträge für den Ort
         onValue(dictionaryRef, (snapshot) => {
           const data = snapshot.val();
           let count = 1;
 
-          // Zähle Wörter mit dem gleichen Ort
+          // Zähle die Wörter mit dem gleichen Ort und berechne den Index
           for (const key in data) {
             if (data[key].ort === ortInput) {
               count++; // Erhöhe den Zähler für den gleichen Ort
@@ -140,7 +140,7 @@
       const dictionaryRef = ref(database, "dictionary");
 
       data.forEach(item => {
-        // Zähle Wörter mit dem gleichen Ort und berechne den Index
+        // Zähle die Wörter mit dem gleichen Ort und berechne den Index
         let count = 1;
         onValue(dictionaryRef, (snapshot) => {
           const dbData = snapshot.val();
@@ -174,6 +174,7 @@
 </head>
 <body>
   <h1>Wörter hinzufügen und anzeigen</h1>
+  
   <div>
     <h2>Neues Wort hinzufügen</h2>
     <input id="word-input" type="text" placeholder="Wort" />
@@ -182,11 +183,13 @@
     <input id="ort-input" type="text" placeholder="Ort" /> <!-- Eingabefeld für Ort -->
     <button onclick="addWordWithAutoIncrement()">Hinzufügen</button>
   </div>
+  
   <div>
     <h2>CSV-Datei hochladen</h2>
     <input type="file" id="csv-file" accept=".csv" />
     <button onclick="uploadCSV()">CSV hochladen</button>
   </div>
+  
   <div>
     <h2>Alle Wörter anzeigen</h2>
     <button onclick="fetchAllData()">Daten abrufen</button>
@@ -194,5 +197,6 @@
       <!-- Alle Daten werden hier angezeigt -->
     </div>
   </div>
+
 </body>
 </html>
