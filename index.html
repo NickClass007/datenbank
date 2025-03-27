@@ -65,12 +65,12 @@
           let index = 1;
 
           if (data) {
-            while (data[`${item.ort}.${index}`]) {
+            while (data[`${ort}.${index}`]) {
               index++; // Suche nächsten freien Schlüssel
             }
           }
 
-          const newKey = `${item.ort}.${index}`; // Generiere neuen Schlüssel
+          const newKey = `${ort}.${index}`; // Generiere neuen Schlüssel
           set(ref(database, `dictionary/${newKey}`), {
             word: wordInput,
             definition: definitionInput,
